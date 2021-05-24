@@ -60,87 +60,98 @@
 <!-- Код для проброса utm меток и др параметров через все внутренние ссылки -->
 <script type="text/javascript">
 
-	$(function() {
-		yalTransferParams();
-	});
+// document.addEventListener("DOMContentLoaded", function(event) {
+$(document).ready(function() {
+    // console.log('enter transfer but not execute');
+    yalTransferParams();
+});
 
-	function yalTransferParams () {
-		// var allowed = [];
-		var allowed = ["utm_", "yclid", "amo_lead_id"];
-		// запись только разрешенных параметров во все ссылки, остальные игнорируются
-		var query = window.location.search;
-		if (query.length < 1) return false;
-		// if (query.indexOf("utm_") >= 0 && query.length > 0) {
-		var referrerParts = query.substring(1).split('&');
-		// console.log(referrerParts);
-		// console.log(window.location.hostname);
-		$("a").each(function () {
-			var href = $(this).attr("href");
-			var href_domain = '';
-			// console.log(href);
-			// console.log(window.location.hostname);
-			// var href_domain = href.split(/\/\/|[?#\/]/)[1];
-			var href_tmp = href.split(/\/\//);
-			// console.log(href_tmp);
-			if (href_tmp[1] !== undefined) {
-				if (href_tmp[0] == 'http:' || href_tmp[0] == 'https:' || href_tmp[0] == '') {
-					href_domain = href_tmp[1].split('/')[0];
-				}
-			}
-			// console.log('hd: '+href_domain+' for '+href);
-			if (href != undefined && href.indexOf("#") < 0 && (href_domain == window.location.hostname || href_domain == '')) {
-				// console.log(href);
-				referrerParts.forEach(function(value) {
-					var param = value.split('=');
-					// if (param[0].indexOf("utm_") >= 0) {
-					if (allowed.some(function(v) { return param[0].indexOf(v) >= 0; }) || allowed.length == 0) {
-						if (!param[1]) param[1] = "";
-						// console.log(param);
-						href = yalSetUrlParam(href, param[0], param[1]);
-					}
-				});
-				$(this).attr("href", href);
-				// $(this).after(" &rarr; " + href); // debug
-			}
-		});
+function yalTransferParams () {
+    console.log('yalTransferParams() triggered');
+    // var allowed = [];
+    var allowed = ["utm_", "yclid", "amo_lead_id"];
+    // запись только разрешенных параметров во все ссылки, остальные игнорируются
+    var query = window.location.search;
+    if (query.length < 1) return false;
+    // if (query.indexOf("utm_") >= 0 && query.length > 0) {
+    var referrerParts = query.substring(1).split('&');
+    // console.log(referrerParts);
+    // console.log(window.location.hostname);
+    $("a").each(function () {
+        var href = $(this).attr("href");
+        // console.log('yalTransferParams() triggered LINK '+href);
+        var href_domain = '';
+        // console.log(href);
+        // console.log(window.location.hostname);
+        // var href_domain = href.split(/\/\/|[?#\/]/)[1];
+        var href_tmp = href.split(/\/\//);
+        // console.log(href_tmp);
+        if (href_tmp[1] !== undefined) {
+            if (href_tmp[0] == 'http:' || href_tmp[0] == 'https:' || href_tmp[0] == '') {
+                href_domain = href_tmp[1].split('/')[0];
+            }
+        }
+        // console.log('hd: '+href_domain+' for '+href);
+        if (href != undefined && href.indexOf("#") < 0 && (href_domain == window.location.hostname || href_domain == '')) {
+            // console.log(href);
+            referrerParts.forEach(function(value) {
+                var param = value.split('=');
+                // console.log('test ' + param[0]);
+                // if (param[0].indexOf("utm_") >= 0) {
+                if (allowed.some(function(v) { return param[0].indexOf(v) >= 0; }) || allowed.length == 0) {
+                    if (!param[1]) param[1] = "";
+                    // console.log(param);
+                    // console.log('added param '+param[0]);
+                    href = yalSetUrlParam(href, param[0], param[1]);
+                }
+            });
+            $(this).attr("href", href);
+            // console.log('changed href to '+href);
+            // $(this).after(" &rarr; " + href); // debug
+        }
+    });
 
-	}
+}
 
-	function yalSetUrlParam (url, key, value) {
+function yalSetUrlParam (url, key, value) {
 
-		 var key = encodeURIComponent(key),
-			  value = encodeURIComponent(value);
+     var key = encodeURIComponent(key),
+          value = encodeURIComponent(value);
 
-		 var baseUrl = url.split('?')[0],
-			  newParam = key + '=' + value,
-			  params = '?' + newParam;
+     var baseUrl = url.split('?')[0],
+          newParam = key + '=' + value,
+          params = '?' + newParam;
 
-		 if (url.split('?')[1] === undefined) {
-			  urlQueryString = '';
-			  params = '?' + newParam;
-		 } else {
-			  urlQueryString = '?' + url.split('?')[1];
-			  var updateRegex = new RegExp('([\?&])' + key + '[^&]*');
-			  var removeRegex = new RegExp('([\?&])' + key + '=[^&;]+[&;]?');
-			  if (value === undefined || value === null || value === '') { // удаляем параметр если он пуст
-					params = urlQueryString.replace(removeRegex, "$1");
-					params = params.replace(/[&;]$/, "");
-			  } else if (urlQueryString.match(updateRegex) !== null) { // если параметр уже есть
-					params = urlQueryString.replace(updateRegex, "$1" + newParam); // обновляем
-					// params = urlQueryString; // оставляем как есть
-			  } else { // Otherwise, add it to end of query string
-					params = urlQueryString + '&' + newParam;
-			  }
-		 }
+     if (url.split('?')[1] === undefined) {
+          urlQueryString = '';
+          params = '?' + newParam;
+     } else {
+          urlQueryString = '?' + url.split('?')[1];
+          var updateRegex = new RegExp('([\?&])' + key + '[^&]*');
+          var removeRegex = new RegExp('([\?&])' + key + '=[^&;]+[&;]?');
+          if (value === undefined || value === null || value === '') { // удаляем параметр если он пуст
+                params = urlQueryString.replace(removeRegex, "$1");
+                params = params.replace(/[&;]$/, "");
+          } else if (urlQueryString.match(updateRegex) !== null) { // если параметр уже есть
+                params = urlQueryString.replace(updateRegex, "$1" + newParam); // обновляем
+                // params = urlQueryString; // оставляем как есть
+          } else { // Otherwise, add it to end of query string
+                params = urlQueryString + '&' + newParam;
+          }
+     }
 
-		 // убираем знак вопроса если это единственный символ в параметрах
-		 params = params === '?' ? '' : params;
+     // убираем знак вопроса если это единственный символ в параметрах
+     params = params === '?' ? '' : params;
 
-		 return baseUrl + params;
+     return baseUrl + params;
 
-	}
-
+}
+    
 </script>
+
+
+
+
 
 <!-- Трекинг форм v3 -->
 <script type="text/javascript">

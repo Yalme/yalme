@@ -23,7 +23,7 @@
 
 		// получаем идентификатор гугл.аналитики через втроенную функцию
 		var ga_client_id = 0;
-		var yal_timer_ym = window.setInterval(function(){
+		var yal_timer_ga = window.setInterval(function(){
 			if (ym_client_id == 0) {
                 if (typeof ga !== 'undefined') {
                     ga(function(tracker) {
@@ -31,7 +31,7 @@
                     });
                 }
             } else {
-				window.clearInterval(yal_timer_ym);
+				window.clearInterval(yal_timer_ga);
 			}
 		}, 500);
 

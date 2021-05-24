@@ -9,7 +9,7 @@
 		var yal_timer_ym = window.setInterval(function(){
 			if (ym_client_id == 0) {
                 // если используется старый счетчик
-				if (yaCounter53956573 != undefined) ym_client_id = yaCounter53956573.getClientID();
+				if (typeof yaCounter53956573 !== 'undefined') ym_client_id = yaCounter53956573.getClientID();
                 // если новый
                 if (typeof ym !== 'undefined') {
                     ym(53956573, 'getClientID', function(clientID) {

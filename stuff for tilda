@@ -3,18 +3,19 @@
 
 	$(document).ready(function() {
 
-		// на случай смены кода метрики на новую версию
-		// if (typeof ym !== 'undefined') {
-		// 	ym(53956573, 'getClientID', function(clientID) {
-		// 		ym_client_id = clientID;
-		// 	});
-		// }
 
 		// получаем идентификатор яндекс.метрики через втроенную функцию
 		var ym_client_id = 0;
 		var yal_timer_ym = window.setInterval(function(){
 			if (ym_client_id == 0) {
+                // если используется старый счетчик
 				if (yaCounter53956573 != undefined) ym_client_id = yaCounter53956573.getClientID();
+                // если новый
+                if (typeof ym !== 'undefined') {
+                    ym(53956573, 'getClientID', function(clientID) {
+                        ym_client_id = clientID;
+                    });
+                }
 			} else {
 				window.clearInterval(yal_timer_ym);
 			}
@@ -22,9 +23,17 @@
 
 		// получаем идентификатор гугл.аналитики через втроенную функцию
 		var ga_client_id = 0;
-		ga(function(tracker) {
-			ga_client_id = tracker.get('clientId');
-		});
+		var yal_timer_ym = window.setInterval(function(){
+			if (ym_client_id == 0) {
+                if (typeof ga !== 'undefined') {
+                    ga(function(tracker) {
+                        ga_client_id = tracker.get('clientId');
+                    });
+                }
+            } else {
+				window.clearInterval(yal_timer_ym);
+			}
+		}, 500);
 
 		// добавляем инпуты с ClientId во все формы, в которые еще не добавлены
 		window.setInterval(function() {
@@ -174,7 +183,7 @@
 			reachGoal_path_need = 'new';
 			if (reachGoal_path.indexOf(reachGoal_path_need) === 0) {
 				// console.log('path /'+reachGoal_path_need+' founded');
-				yalReachGoalSend('form-path-'+reachGoal_path_need);
+				// yalReachGoalSend('form-path-'+reachGoal_path_need);
 				// yaCounter53956573.reachGoal('form-path-'+reachGoal_path_need) // основной встроенный счетчик
 				// yaCounter53956573.hit('/reachGoal/form-path-'+reachGoal_path_need+'/');
 				// ga('send', 'pageview', '/reachGoal/form-path-'+reachGoal_path_need+'/'); // гугл основной счетчик
@@ -184,7 +193,7 @@
 			reachGoal_path_need = 'ua';
 			if (reachGoal_path.indexOf(reachGoal_path_need) === 0) {
 				// console.log('path /'+reachGoal_path_need+' founded');
-				yalReachGoalSend('form-path-'+reachGoal_path_need);
+				// yalReachGoalSend('form-path-'+reachGoal_path_need);
 				// yaCounter53956573.reachGoal('form-path-'+reachGoal_path_need) // основной встроенный счетчик
 				// yaCounter53956573.hit('/reachGoal/form-path-'+reachGoal_path_need+'/');
 				// ga('send', 'pageview', '/reachGoal/form-path-'+reachGoal_path_need+'/'); // гугл основной счетчик
@@ -198,6 +207,9 @@
 			}
 
 			// ym(55776127, 'reachGoal', 'form-any-v2'); // новый счетчик можно подклюить кодом
+
+            yalReachGoalSend('form-any-v1'); // при отправке любой формы
+
 			return true;
 
 		}
@@ -223,9 +235,10 @@
 	// на какие счетчики и каким образом отправлять цели
 	function yalReachGoalSend (goal) {
 		console.log(' Отправляем цель '+goal+' в счетчики');
-		yaCounter53956573.reachGoal(goal); // основной встроенный счетчик метрики
-		yaCounter53956573.hit('/reachGoal/'+goal+'/');
-		ga('send', 'pageview', '/reachGoal/'+goal+'/'); // гугл основной счетчик
+        ym(79439623, 'reachGoal', goal); // новый счетчик можно подклюить кодом
+		// yaCounter53956573.reachGoal(goal); // основной встроенный счетчик метрики
+		// yaCounter53956573.hit('/reachGoal/'+goal+'/');
+		// ga('send', 'pageview', '/reachGoal/'+goal+'/'); // гугл основной счетчик
 	}
 
 </script>

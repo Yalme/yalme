@@ -1,0 +1,231 @@
+<!-- Прикрепление идентификаторов гугла и метрики ко всем формам v5 -->
+<script type="text/javascript">
+
+	$(document).ready(function() {
+
+		// на случай смены кода метрики на новую версию
+		// if (typeof ym !== 'undefined') {
+		// 	ym(53956573, 'getClientID', function(clientID) {
+		// 		ym_client_id = clientID;
+		// 	});
+		// }
+
+		// получаем идентификатор яндекс.метрики через втроенную функцию
+		var ym_client_id = 0;
+		var yal_timer_ym = window.setInterval(function(){
+			if (ym_client_id == 0) {
+				if (yaCounter53956573 != undefined) ym_client_id = yaCounter53956573.getClientID();
+			} else {
+				window.clearInterval(yal_timer_ym);
+			}
+		}, 500);
+
+		// получаем идентификатор гугл.аналитики через втроенную функцию
+		var ga_client_id = 0;
+		ga(function(tracker) {
+			ga_client_id = tracker.get('clientId');
+		});
+
+		// добавляем инпуты с ClientId во все формы, в которые еще не добавлены
+		window.setInterval(function() {
+			if (ym_client_id != 0) {
+				$("form:not(.yal-ymcid-added)").each(function () {
+					$(this).append('<input type="hidden" name="ym_client_id" value="'+ym_client_id+'" />');
+					$(this).addClass("yal-ymcid-added");
+				});
+			}
+			if (ga_client_id != 0) {
+				$("form:not(.yal-gacid-added)").each(function () {
+					$(this).append('<input type="hidden" name="ga_client_id" value="'+ga_client_id+'" />');
+					$(this).addClass("yal-gacid-added");
+				});
+			}
+		}, 1000);
+
+
+	});
+
+</script>
+
+
+<!-- Код для проброса utm меток и др параметров через все внутренние ссылки -->
+<script type="text/javascript">
+
+	$(function() {
+		yalTransferParams();
+	});
+
+	function yalTransferParams () {
+		// var allowed = [];
+		var allowed = ["utm_", "yclid", "amo_lead_id"];
+		// запись только разрешенных параметров во все ссылки, остальные игнорируются
+		var query = window.location.search;
+		if (query.length < 1) return false;
+		// if (query.indexOf("utm_") >= 0 && query.length > 0) {
+		var referrerParts = query.substring(1).split('&');
+		// console.log(referrerParts);
+		// console.log(window.location.hostname);
+		$("a").each(function () {
+			var href = $(this).attr("href");
+			var href_domain = '';
+			// console.log(href);
+			// console.log(window.location.hostname);
+			// var href_domain = href.split(/\/\/|[?#\/]/)[1];
+			var href_tmp = href.split(/\/\//);
+			// console.log(href_tmp);
+			if (href_tmp[1] !== undefined) {
+				if (href_tmp[0] == 'http:' || href_tmp[0] == 'https:' || href_tmp[0] == '') {
+					href_domain = href_tmp[1].split('/')[0];
+				}
+			}
+			// console.log('hd: '+href_domain+' for '+href);
+			if (href != undefined && href.indexOf("#") < 0 && (href_domain == window.location.hostname || href_domain == '')) {
+				// console.log(href);
+				referrerParts.forEach(function(value) {
+					var param = value.split('=');
+					// if (param[0].indexOf("utm_") >= 0) {
+					if (allowed.some(function(v) { return param[0].indexOf(v) >= 0; }) || allowed.length == 0) {
+						if (!param[1]) param[1] = "";
+						// console.log(param);
+						href = yalSetUrlParam(href, param[0], param[1]);
+					}
+				});
+				$(this).attr("href", href);
+				// $(this).after(" &rarr; " + href); // debug
+			}
+		});
+
+	}
+
+	function yalSetUrlParam (url, key, value) {
+
+		 var key = encodeURIComponent(key),
+			  value = encodeURIComponent(value);
+
+		 var baseUrl = url.split('?')[0],
+			  newParam = key + '=' + value,
+			  params = '?' + newParam;
+
+		 if (url.split('?')[1] === undefined) {
+			  urlQueryString = '';
+			  params = '?' + newParam;
+		 } else {
+			  urlQueryString = '?' + url.split('?')[1];
+			  var updateRegex = new RegExp('([\?&])' + key + '[^&]*');
+			  var removeRegex = new RegExp('([\?&])' + key + '=[^&;]+[&;]?');
+			  if (value === undefined || value === null || value === '') { // удаляем параметр если он пуст
+					params = urlQueryString.replace(removeRegex, "$1");
+					params = params.replace(/[&;]$/, "");
+			  } else if (urlQueryString.match(updateRegex) !== null) { // если параметр уже есть
+					params = urlQueryString.replace(updateRegex, "$1" + newParam); // обновляем
+					// params = urlQueryString; // оставляем как есть
+			  } else { // Otherwise, add it to end of query string
+					params = urlQueryString + '&' + newParam;
+			  }
+		 }
+
+		 // убираем знак вопроса если это единственный символ в параметрах
+		 params = params === '?' ? '' : params;
+
+		 return baseUrl + params;
+
+	}
+
+</script>
+
+<!-- Трекинг форм v3 -->
+<script type="text/javascript">
+
+	$(document).ready(function () {
+
+		// test
+		//ym(55776127, 'reachGoal', 'test');
+		window.onload = function() {
+			// yalReachGoalSend('test');
+			// yaCounter53956573.reachGoal('test'); // основной встроенный счетчик
+			// yaCounter53956573.hit('/reachGoal/test/'); // основной встроенный счетчик
+			// ga('send', 'pageview', '/reachGoal/test/'); // гугл основной счетчик
+		};
+
+		// калбэк отправки всех форм
+	    window.yalFormSuccessFunction = function ($form) {
+
+			// console.log('yal callback goal fired');
+			let reachGoal_path = window.location.pathname;
+			reachGoal_path = reachGoal_path.replace(/^\/+|\/+$/g, '');
+
+			// автоотправка по первой подпапке
+			// let reachGoal_name_main = reachGoal_path.split('/')[0];
+			// console.log('reachGoal_name_main '+reachGoal_name_main);
+			// yaCounter53956573.reachGoal('form-path-'+reachGoal_name_main) // основной встроенный счетчик
+			// ga('send', 'pageview', '/reachGoal/form-path-'+reachGoal_name_main); // гугл основной счетчик
+
+			// автоотправка по полному адресу
+			// let reachGoal_name_full = reachGoal_path.replace(/\//g, '-');
+			// console.log('reachGoal_name_full '+reachGoal_name_full);
+			// if (reachGoal_name_main != reachGoal_name_full) {
+			// 	ga('send', 'pageview', '/reachGoal/form-path-'+reachGoal_name_full); // гугл основной счетчик
+			// 	yaCounter53956573.reachGoal('form-path-'+reachGoal_name_full) // основной встроенный счетчик
+			// }
+
+			let reachGoal_path_need = '';
+
+			// отправка цели для всех /new форм
+			reachGoal_path_need = 'new';
+			if (reachGoal_path.indexOf(reachGoal_path_need) === 0) {
+				// console.log('path /'+reachGoal_path_need+' founded');
+				yalReachGoalSend('form-path-'+reachGoal_path_need);
+				// yaCounter53956573.reachGoal('form-path-'+reachGoal_path_need) // основной встроенный счетчик
+				// yaCounter53956573.hit('/reachGoal/form-path-'+reachGoal_path_need+'/');
+				// ga('send', 'pageview', '/reachGoal/form-path-'+reachGoal_path_need+'/'); // гугл основной счетчик
+			}
+
+			// отправка цели для всех /ua форм
+			reachGoal_path_need = 'ua';
+			if (reachGoal_path.indexOf(reachGoal_path_need) === 0) {
+				// console.log('path /'+reachGoal_path_need+' founded');
+				yalReachGoalSend('form-path-'+reachGoal_path_need);
+				// yaCounter53956573.reachGoal('form-path-'+reachGoal_path_need) // основной встроенный счетчик
+				// yaCounter53956573.hit('/reachGoal/form-path-'+reachGoal_path_need+'/');
+				// ga('send', 'pageview', '/reachGoal/form-path-'+reachGoal_path_need+'/'); // гугл основной счетчик
+			}
+
+			// отправляем кастомный гол если он прописан на конкретной странице
+			// типа yalReachGoalCustomName = 'form-path-new';
+			if (typeof yalReachGoalCustomName !== 'undefined' && typeof yalReachGoalCustomName === 'string') {
+				console.log('we found custom goal name: '+yalReachGoalCustomName);
+				yalReachGoalSend(yalReachGoalCustomName);
+			}
+
+			// ym(55776127, 'reachGoal', 'form-any-v2'); // новый счетчик можно подклюить кодом
+			return true;
+
+		}
+
+		// вешаем калбек для обычных форм
+		$('.js-form-proccess').each(function () {
+			$(this).data('success-callback', 'window.yalFormSuccessFunction');
+			console.log('yal form id is ' + $(this).attr('id'));
+		});
+
+		// вешаем калбек для zero форм (нет события прогрузки)
+		 setInterval(function () {
+	        $(".js-form-proccess:not(.yalSuccessCallbackAdded)").each(function () {
+	        // $(".js-form-proccess").each(function () {
+	            $(this).data("success-callback", "window.yalFormSuccessFunction");
+					$(this).addClass("yalSuccessCallbackAdded");
+					console.log('yal ZERO form id is ' + $(this).attr('id'));
+	        });
+	    }, 3000);
+
+	});
+
+	// на какие счетчики и каким образом отправлять цели
+	function yalReachGoalSend (goal) {
+		console.log(' Отправляем цель '+goal+' в счетчики');
+		yaCounter53956573.reachGoal(goal); // основной встроенный счетчик метрики
+		yaCounter53956573.hit('/reachGoal/'+goal+'/');
+		ga('send', 'pageview', '/reachGoal/'+goal+'/'); // гугл основной счетчик
+	}
+
+</script>
